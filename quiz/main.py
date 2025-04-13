@@ -1,11 +1,93 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Path
 from routers import subject, question, options  # Correct import paths
 from database import Base, engine
+from config import settings
 
-app = FastAPI()
+app = FastAPI(title=settings.PROJECT_NAME)
 
-# Create database tables (this should be fine)
+# make all endpoints secure. These all needs to be JWT authenticated
+# from fastapi import FastAPI, Depends
+# from auth import get_current_user
+# app = FastAPI(dependencies=[Depends(get_current_user)])
+
+##########################################################################################
+# Authentication can be implemented on selected endpoint also
+# quiz_router = APIRouter(prefix="/quiz", dependencies=[Depends(get_current_user)])
+
+# @quiz_router.get("/questions")
+# def get_questions():
+#     return {"msg": "Only for authenticated users"}
+
+# app.include_router(quiz_router)
+
+###########################################################################################
+
+##################################### not reccommende for production
+# Create database tables
+'''
+Keep this line in seperate file and call with python filename.py
+If kept here it will create/update tables every time the program runs.
+if kept in seperate file, table will update/create only when the script is called
+'''
 Base.metadata.create_all(bind=engine)
+
+# This will create tables when the app starts
+# @app.on_event("startup")
+# def on_startup():
+#     Base.metadata.create_all(bind=engine)
+
+################################## recommended for production #####################
+'''
+1: pip install alembic
+2: In the root of the project run commnad
+    alembic init alembic
+
+    this will create:
+    .
+    ├── alembic/
+    │   ├── versions/
+    │   └── env.py
+    ├── alembic.ini
+
+3: Configure alembic.ini
+    Open alembic.ini and update the sqlalchemy.url with your DB connection:
+
+    sqlalchemy.url = sqlite:///./quiz.db
+    PostgreSQL: postgresql://user:password@localhost/dbname
+    MySQL/MariaDB: mysql+pymysql://user:pass@localhost/dbname
+    MSSQL: mssql+pyodbc://user:pass@localhost/dbname?driver=ODBC+Driver+17+for+SQL+Server
+    Oracle: oracle+cx_oracle://user:pass@localhost:1521/?service_name=orcl
+
+4: Edit env.py to Include Your Models
+    At the top of alembic/env.py, add:
+        import sys
+        import os
+        from config import settings
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+        from database import Base
+        from models import *  # make sure this includes all models
+        target_metadata = Base.metadata
+
+        # instead of using sqlalchemy.url from alembic.ini
+        config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+
+
+5: Create an Migration
+    alembic revision --autogenerate -m "whatever message"
+
+    Alembic will scan your models and generate a new file in alembic/versions/ containing the migration.
+
+6: Apply the Migration (Create Tables)
+    alembic upgrade head
+
+7: Common commands:
+    alembic downgrade -1	    Revert last migration
+    alembic current	            Show current DB migration version
+    alembic history	            View all migration history
+
+'''
+
 
 # Include routers
 app.include_router(subject.router)
@@ -30,6 +112,11 @@ students = {
         "age" : 18
     },
     3: {
+        "name" : "Rajan",
+        "Title" : "Sirohi",
+        "age" : 15
+    },
+    4: {
         "name" : "Rajan",
         "Title" : "Sirohi",
         "age" : 15
