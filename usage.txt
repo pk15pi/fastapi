@@ -1,0 +1,39 @@
+pip install fastapi
+pip install uvicorn
+or 
+pip install fastapi[all]
+to download all requirements in one go
+
+1: Fastapi need a webserver to run.
+
+2: Create a file called main.py and write code
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
+
+3: run it 
+uvicorn main:app --reload
+
+4: To create models, use pydantic Basemodel.
+Pydantic is a library used by FastAPI for data validation and serialization
+
+
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    name: str
+    description: str = None
+    price: float
+    in_stock: bool
+
+@app.post("/items/")
+def create_item(item: Item):
+    return {"item": item}
+
+5: Swagger is inbuilt in FastAPI. To access fastapi in Swagger
+localhost:8000/docs
