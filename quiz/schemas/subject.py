@@ -6,6 +6,9 @@ class SubjectBase(BaseModel):
 class SubjectCreate(SubjectBase):
     pass
 
+class Subjectupdate(SubjectBase):
+    name : str
+
 class SubjectOut(SubjectBase):
     id: int
     class Config:

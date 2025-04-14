@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Path
+from fastapi import Depends, FastAPI, Path
+from routers.user import get_current_user
 from routers import subject, question, options  # Correct import paths
 from database import Base, engine
 from config import settings
@@ -9,6 +10,7 @@ app = FastAPI(title=settings.PROJECT_NAME)
 # from fastapi import FastAPI, Depends
 # from auth import get_current_user
 # app = FastAPI(dependencies=[Depends(get_current_user)])
+app = FastAPI()
 
 ##########################################################################################
 # Authentication can be implemented on selected endpoint also
@@ -19,6 +21,16 @@ app = FastAPI(title=settings.PROJECT_NAME)
 #     return {"msg": "Only for authenticated users"}
 
 # app.include_router(quiz_router)
+
+
+######################### Keycloak integration #################
+KEYCLOAK_URL = "http://localhost:8080"
+KEYCLOAK_REALM = "fastapi"
+KEYCLOAK_CLIENT_ID = "fastapi"
+KEYCLOAK_ISSUER = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}"
+KEYCLOAK_JWKS_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
+KEYCLOAK_OFFLINE_TOKEN = "your_hardcoded_offline_token_here"
+
 
 ###########################################################################################
 
